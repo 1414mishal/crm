@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LuMe PRO | Advanced Agency CRM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        :root { --accent: #a855f7; --dark: #0f172a; --slate: #1e293b; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--dark); color: #f1f5f9; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); }
+        .sidebar-btn.active { background: var(--accent); color: white; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3); }
+        input, select, textarea { background: #111827 !important; border: 1px solid #334155 !important; color: white !important; border-radius: 12px !important; }
+        .custom-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        .card-anim { transition: all 0.2s ease; }
+        .card-anim:hover { transform: translateY(-3px); border-color: var(--accent); }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-72 border-r border-slate-800 flex flex-col bg-slate-900/50">
+        <div class="p-8">
+            <h1 class="text-3xl font-black tracking-tighter italic">LuMe<span class="text-purple-500 text-4xl">.</span></h1>
+            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-[3px]">Agency Control</p>
+        </div>
+        
+        <nav class="flex-1 px-4 space-y-2">
+            <button onclick="showPage('dash')" id="nav-dash" class="sidebar-btn active w-full flex items-center p-4 rounded-2xl transition text-slate-400 group">
+                <i class="fa-solid fa-grid-2 mr-3 group-hover:scale-110 transition"></i> <span class="font-semibold">Dashboard</span>
+            </button>
+            <button onclick="showPage('clients')" id="nav-clients" class="sidebar-btn w-full flex items-center p-4 rounded-2xl transition text-slate-400 group">
+                <i class="fa-solid fa-users mr-3 group-hover:scale-110 transition"></i> <span class="font-semibold">Client Pipeline</span>
+            </button>
+            <button onclick="showPage('sales')" id="nav-sales" class="sidebar-btn w-full flex items-center p-4 rounded-2xl transition text-slate-400 group">
+                <i class="fa-solid fa-vault mr-3 group-hover:scale-110 transition"></i> <span class="font-semibold">Sales & Comms</span>
+            </button>
+            <button onclick="showPage('tasks')" id="nav-tasks" class="sidebar-btn w-full flex items-center p-4 rounded-2xl transition text-slate-400 group">
+                <i class="fa-solid fa-list-check mr-3 group-hover:scale-110 transition"></i> <span class="font-semibold">Master Tasks</span>
+            </button>
+        </nav>
+
+        <div class="p-6">
+            <button onclick="openModal()" class="w-full bg-purple-600 hover:bg-purple-500 py-4 rounded-2xl font-bold shadow-xl shadow-purple-500/20 transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-circle-plus"></i> NEW PROJECT
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 flex flex-col overflow-hidden bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black">
+        
+        <!-- Header -->
+        <header class="h-20 border-b border-slate-800/50 flex items-center justify-between px-10">
+            <h2 id="page-title" class="text-xl font-bold text-white tracking-tight">Dashboard Overview</h2>
+            <div class="flex items-center gap-6">
+                <div class="text-right">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase">System Status</p>
+                    <p class="text-xs text-emerald-400 flex items-center gap-1"><span class="h-2 w-2 bg-emerald-500 rounded-full animate-pulse"></span> Encrypted & Live</p>
+                </div>
+                <button onclick="exportFullData()" class="p-3 bg-slate-800 rounded-xl hover:bg-slate-700 transition text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-file-export"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Dynamic View Container -->
+        <div class="flex-1 overflow-y-auto p-10 custom-scroll" id="view-container">
+            
+            <!-- DASHBOARD PAGE -->
+            <div id="page-dash" class="space-y-8 animate-in fade-in duration-500">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="glass p-6 rounded-3xl">
+                        <p class="text-slate-500 text-xs font-bold uppercase">Total Revenue</p>
+                        <h3 id="stat-revenue" class="text-3xl font-black mt-2 text-white tracking-tighter">₹0</h3>
+                    </div>
+                    <div class="glass p-6 rounded-3xl">
+                        <p class="text-slate-500 text-xs font-bold uppercase">Commissions Owed</p>
+                        <h3 id="stat-comms" class="text-3xl font-black mt-2 text-purple-400 tracking-tighter">₹0</h3>
+                    </div>
+                    <div class="glass p-6 rounded-3xl">
+                        <p class="text-slate-500 text-xs font-bold uppercase">Pending Tasks</p>
+                        <h3 id="stat-tasks" class="text-3xl font-black mt-2 text-orange-400 tracking-tighter">0</h3>
+                    </div>
+                    <div class="glass p-6 rounded-3xl">
+                        <p class="text-slate-500 text-xs font-bold uppercase">Unpaid Balance</p>
+                        <h3 id="stat-balance" class="text-3xl font-black mt-2 text-red-400 tracking-tighter">₹0</h3>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="glass rounded-3xl overflow-hidden">
+                        <div class="p-6 border-b border-slate-800 flex justify-between">
+                            <h4 class="font-bold">Upcoming Meetings</h4>
+                            <i class="fa-solid fa-calendar text-purple-500"></i>
+                        </div>
+                        <div id="dash-meetings" class="p-2 divide-y divide-slate-800"></div>
+                    </div>
+                    <div class="glass rounded-3xl overflow-hidden">
+                        <div class="p-6 border-b border-slate-800 flex justify-between">
+                            <h4 class="font-bold">Recent Pipeline</h4>
+                            <i class="fa-solid fa-arrow-trend-up text-emerald-500"></i>
+                        </div>
+                        <div id="dash-pipeline" class="p-2 divide-y divide-slate-800"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CLIENTS PAGE -->
+            <div id="page-clients" class="hidden space-y-6">
+                <div class="flex gap-4 mb-6">
+                    <input type="text" id="clientSearch" oninput="render()" placeholder="Search clients, tech, or sales rep..." class="flex-1 p-4">
+                </div>
+                <div class="glass rounded-3xl overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-900 text-slate-500 text-[10px] uppercase font-bold">
+                            <tr>
+                                <th class="p-6">Client / Package</th>
+                                <th class="p-6">Next Meeting</th>
+                                <th class="p-6">Status</th>
+                                <th class="p-6">Financials</th>
+                                <th class="p-6"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="client-table" class="divide-y divide-slate-800"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SALES PAGE -->
+            <div id="page-sales" class="hidden space-y-6">
+                <div class="grid grid-cols-1 gap-4" id="sales-list"></div>
+            </div>
+
+            <!-- TASKS PAGE -->
+            <div id="page-tasks" class="hidden space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="master-task-grid"></div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- PRO MODAL -->
+    <div id="modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50 p-4">
+        <div class="glass bg-slate-900 w-full max-w-4xl rounded-[40px] overflow-hidden shadow-2xl border border-purple-500/20">
+            <div class="p-8 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+                <div>
+                    <h3 class="text-2xl font-bold text-white">Advanced Record Entry</h3>
+                    <p class="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">LuMe Intelligence System</p>
+                </div>
+                <button onclick="closeModal()" class="h-12 w-12 rounded-full bg-slate-800 flex items-center justify-center hover:bg-red-500/20 hover:text-red-500 transition-all text-2xl">&times;</button>
+            </div>
+            
+            <form id="pro-form" class="p-8 grid grid-cols-1 md:grid-cols-3 gap-8 max-h-[75vh] overflow-y-auto custom-scroll">
+                <!-- Col 1: Basics -->
+                <div class="space-y-4">
+                    <p class="text-purple-500 text-[10px] font-bold uppercase tracking-widest">Client Identity</p>
+                    <input type="text" id="fName" placeholder="Company/Client Name" required class="w-full p-4">
+                    <select id="fService" class="w-full p-4">
+                        <option>Full Web Suite</option>
+                        <option>E-Commerce Design</option>
+                        <option>SaaS Development</option>
+                        <option>UI/UX Overhaul</option>
+                    </select>
+                    <textarea id="fPrefs" placeholder="Client Preferences / Wants (e.g. 'Minimalist, Dark mode, heavy animations')" class="w-full p-4 h-32"></textarea>
+                </div>
+
+                <!-- Col 2: Sales & Comms -->
+                <div class="space-y-4">
+                    <p class="text-purple-500 text-[10px] font-bold uppercase tracking-widest">Sales & Commission</p>
+                    <input type="text" id="fSalesman" placeholder="Who made the sale?" class="w-full p-4">
+                    <div class="relative">
+                        <input type="number" id="fCommRate" placeholder="Sales Cut (%)" class="w-full p-4">
+                        <span class="absolute right-4 top-4 text-slate-500">%</span>
+                    </div>
+                    <p class="text-purple-500 text-[10px] font-bold uppercase tracking-widest mt-6">Next Meeting</p>
+                    <input type="datetime-local" id="fMeeting" class="w-full p-4">
+                </div>
+
+                <!-- Col 3: Money & Status -->
+                <div class="space-y-4">
+                    <p class="text-purple-500 text-[10px] font-bold uppercase tracking-widest">Advanced Ledger</p>
+                    <div class="relative">
+                        <input type="number" id="fTotal" placeholder="Total Budget (₹)" required class="w-full p-4">
+                        <span class="absolute left-[-15px] top-4 text-emerald-500">₹</span>
+                    </div>
+                    <div class="relative">
+                        <input type="number" id="fPaid" placeholder="Amount Paid (₹)" class="w-full p-4">
+                    </div>
+                    <select id="fStatus" class="w-full p-4">
+                        <option value="Lead">New Lead</option>
+                        <option value="Pitching">Pitching/Proposal</option>
+                        <option value="Active">Active Project</option>
+                        <option value="Maintenance">Launched/Maintenance</option>
+                    </select>
+                    <button type="submit" class="w-full bg-purple-600 hover:bg-purple-500 py-6 rounded-2xl font-black text-white shadow-2xl shadow-purple-500/40 transition-all mt-4 italic uppercase">
+                        Deploy Record
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // CORE DATA STATE
+        let db = JSON.parse(localStorage.getItem('lume_pro_db')) || [];
+
+        function save() {
+            localStorage.setItem('lume_pro_db', JSON.stringify(db));
+            render();
+        }
+
+        // VIEW CONTROLLER
+        function showPage(pageId) {
+            ['dash', 'clients', 'sales', 'tasks'].forEach(p => {
+                document.getElementById('page-' + p).classList.add('hidden');
+                document.getElementById('nav-' + p).classList.remove('active');
+            });
+            document.getElementById('page-' + pageId).classList.remove('hidden');
+            document.getElementById('nav-' + pageId).classList.add('active');
+            
+            const titles = { dash: 'Dashboard Overview', clients: 'Client Pipeline', sales: 'Sales & Commissions', tasks: 'Master Tasks' };
+            document.getElementById('page-title').innerText = titles[pageId];
+        }
+
+        // MODAL HANDLERS
+        function openModal() { document.getElementById('modal').classList.replace('hidden', 'flex'); }
+        function closeModal() { document.getElementById('modal').classList.replace('flex', 'hidden'); document.getElementById('pro-form').reset(); }
+
+        // FORM SUBMISSION
+        document.getElementById('pro-form').onsubmit = (e) => {
+            e.preventDefault();
+            const record = {
+                id: Date.now(),
+                name: document.getElementById('fName').value,
+                service: document.getElementById('fService').value,
+                prefs: document.getElementById('fPrefs').value,
+                salesman: document.getElementById('fSalesman').value || 'Owner',
+                commRate: parseFloat(document.getElementById('fCommRate').value) || 0,
+                nextMeeting: document.getElementById('fMeeting').value,
+                totalBudget: parseFloat(document.getElementById('fTotal').value) || 0,
+                amountPaid: parseFloat(document.getElementById('fPaid').value) || 0,
+                status: document.getElementById('fStatus').value,
+                tasks: [] 
+            };
+            db.push(record);
+            save();
+            closeModal();
+        };
+
+        function deleteRecord(id) {
+            if(confirm('Wipe this record?')) {
+                db = db.filter(x => x.id !== id);
+                save();
+            }
+        }
+
+        function addTask(clientId) {
+            const taskText = prompt("Enter Task:");
+            if(!taskText) return;
+            const idx = db.findIndex(x => x.id === clientId);
+            db[idx].tasks.push({ id: Date.now(), text: taskText, done: false });
+            save();
+        }
+
+        function toggleTask(clientId, taskId) {
+            const cIdx = db.findIndex(x => x.id === clientId);
+            const tIdx = db[cIdx].tasks.findIndex(t => t.id === taskId);
+            db[cIdx].tasks[tIdx].done = !db[cIdx].tasks[tIdx].done;
+            save();
+        }
+
+        // RENDER ENGINE
+        function render() {
+            const search = document.getElementById('clientSearch').value.toLowerCase();
+            
+            // Statistics
+            const totalRev = db.reduce((a, b) => a + b.amountPaid, 0);
+            const totalComms = db.reduce((a, b) => a + (b.totalBudget * (b.commRate/100)), 0);
+            const totalBal = db.reduce((a, b) => a + (b.totalBudget - b.amountPaid), 0);
+            const totalTasks = db.reduce((a, b) => a + b.tasks.filter(t => !t.done).length, 0);
+
+            document.getElementById('stat-revenue').innerText = `₹${totalRev.toLocaleString()}`;
+            document.getElementById('stat-comms').innerText = `₹${totalComms.toLocaleString()}`;
+            document.getElementById('stat-balance').innerText = `₹${totalBal.toLocaleString()}`;
+            document.getElementById('stat-tasks').innerText = totalTasks;
+
+            // Clients Table
+            const filtered = db.filter(x => x.name.toLowerCase().includes(search) || x.salesman.toLowerCase().includes(search));
+            document.getElementById('client-table').innerHTML = filtered.map(x => `
+                <tr class="hover:bg-slate-800/20 transition group">
+                    <td class="p-6">
+                        <div class="font-bold text-white">${x.name}</div>
+                        <div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">${x.service}</div>
+                    </td>
+                    <td class="p-6">
+                        <div class="text-xs ${x.nextMeeting ? 'text-purple-400' : 'text-slate-600 italic'}">
+                            <i class="fa-regular fa-clock mr-1"></i> ${x.nextMeeting ? new Date(x.nextMeeting).toLocaleString() : 'No meeting'}
+                        </div>
+                    </td>
+                    <td class="p-6">
+                        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase ${getStatusColor(x.status)}">${x.status}</span>
+                    </td>
+                    <td class="p-6">
+                        <div class="text-sm font-bold text-emerald-400">₹${x.amountPaid.toLocaleString()} paid</div>
+                        <div class="text-[10px] text-red-500 font-bold italic">₹${(x.totalBudget - x.amountPaid).toLocaleString()} due</div>
+                    </td>
+                    <td class="p-6 text-right">
+                        <button onclick="deleteRecord(${x.id})" class="text-slate-700 hover:text-red-500 transition"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Sales Comms View
+            document.getElementById('sales-list').innerHTML = db.map(x => `
+                <div class="glass p-6 rounded-3xl flex justify-between items-center border-l-4 border-purple-500">
+                    <div>
+                        <p class="text-[10px] text-slate-500 font-bold uppercase">Closer: ${x.salesman}</p>
+                        <h4 class="text-lg font-bold">${x.name}</h4>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-slate-400">Commission (${x.commRate}%)</p>
+                        <p class="text-xl font-black text-purple-400">₹${(x.totalBudget * (x.commRate/100)).toLocaleString()}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            // Tasks View
+            document.getElementById('master-task-grid').innerHTML = db.map(x => `
+                <div class="glass p-6 rounded-3xl flex flex-col h-[300px] card-anim">
+                    <div class="flex justify-between items-start mb-4">
+                        <h4 class="font-bold text-purple-400">${x.name}</h4>
+                        <button onclick="addTask(${x.id})" class="h-8 w-8 bg-purple-600 rounded-lg text-sm hover:scale-110 transition">+</button>
+                    </div>
+                    <div class="flex-1 overflow-y-auto custom-scroll space-y-2">
+                        ${x.tasks.map(t => `
+                            <div onclick="toggleTask(${x.id}, ${t.id})" class="p-3 bg-slate-900/50 rounded-xl flex items-center gap-3 cursor-pointer hover:bg-slate-800 transition">
+                                <i class="fa-solid ${t.done ? 'fa-circle-check text-emerald-500' : 'fa-circle text-slate-700'}"></i>
+                                <span class="text-xs ${t.done ? 'line-through text-slate-600' : 'text-slate-300'}">${t.text}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-slate-800 text-[10px] text-slate-500 font-bold italic truncate">
+                        REQ: ${x.prefs || 'No specific preferences listed.'}
+                    </div>
+                </div>
+            `).join('');
+
+            // Dash Sub-renders
+            document.getElementById('dash-meetings').innerHTML = db.filter(x => x.nextMeeting).slice(0, 5).map(x => `
+                <div class="p-4 flex justify-between items-center">
+                    <div>
+                        <div class="text-sm font-bold">${x.name}</div>
+                        <div class="text-[10px] text-slate-500">${x.service}</div>
+                    </div>
+                    <div class="text-xs font-mono text-purple-400">${new Date(x.nextMeeting).toLocaleDateString()} @ ${new Date(x.nextMeeting).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                </div>
+            `).join('');
+        }
+
+        function getStatusColor(s) {
+            if(s === 'Active') return 'bg-purple-500/10 text-purple-500';
+            if(s === 'Maintenance') return 'bg-emerald-500/10 text-emerald-500';
+            if(s === 'Pitching') return 'bg-orange-500/10 text-orange-500';
+            return 'bg-slate-800 text-slate-500';
+        }
+
+        function exportFullData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
+            const dl = document.createElement('a');
+            dl.setAttribute("href", dataStr);
+            dl.setAttribute("download", "lume_backup.json");
+            dl.click();
+        }
+
+        render();
+    </script>
+</body>
+</html>
